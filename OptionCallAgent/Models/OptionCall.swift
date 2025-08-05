@@ -7,11 +7,11 @@
 
 import Foundation
 
-enum OptionType: String {
-    case call = "CALL"
-    case put = "PUT"
-    case sell = "SELL"
-}
+//enum OptionType: String, Codable {
+//    case call = "CALL"
+//    case put = "PUT"
+//    case sell = "SELL"
+//}
 
 struct OptionCall: Identifiable, Decodable {
     let id = UUID()

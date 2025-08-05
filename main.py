@@ -28,6 +28,11 @@ class OptionCall(BaseModel):
     strikePrice: float
     expiry: datetime
     reason: str
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%SZ')
+        }
 
 @app.get("/")
 def read_root():
@@ -35,19 +40,16 @@ def read_root():
 
 @app.get("/option-calls", response_model=List[OptionCall])
 def get_option_calls():
-    # Replace this mock logic with real logic later
-    calls = [
-        OptionCall(
-            type="CALL",
-            strikePrice=25000.0,
-            expiry=datetime(2025, 8, 8),
-            reason="Nifty is trending up. Buy near the money CALL option."
-        ),
-        OptionCall(
-            type="SELL",
-            strikePrice=25000.0,
-            expiry=datetime(2025, 8, 8),
-            reason="High implied volatility. Consider selling options."
-        )
-    ]
-    return calls
+    raw_calls = generate_option_calls()
+    parsed_calls = []
+
+    for call in raw_calls:
+        # You might need to improve this parsing logic
+        parsed_calls.append(OptionCall(
+            type="CALL",  # extract from call["recommendation"]
+            strikePrice=25000.0,  # extract or parse
+            expiry=datetime(2025, 8, 8),  # parse from string
+            reason=call["recommendation"]
+        ))
+
+    return parsed_calls
