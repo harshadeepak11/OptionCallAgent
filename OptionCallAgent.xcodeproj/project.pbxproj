@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3ABDC3072E41D32300C9E2BD /* requirements.txt in Resources */ = {isa = PBXBuildFile; fileRef = 3ABDC3062E41D32300C9E2BD /* requirements.txt */; };
+		3ABDC3082E41D32300C9E2BD /* main.py in Resources */ = {isa = PBXBuildFile; fileRef = 3ABDC3052E41D32300C9E2BD /* main.py */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		3ABDC2542E3F60E600C9E2BD /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +32,8 @@
 		3ABDC2432E3F60E500C9E2BD /* OptionCallAgent.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OptionCallAgent.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ABDC2532E3F60E600C9E2BD /* OptionCallAgentTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OptionCallAgentTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3ABDC25D2E3F60E600C9E2BD /* OptionCallAgentUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OptionCallAgentUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3ABDC3052E41D32300C9E2BD /* main.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = main.py; sourceTree = "<group>"; };
+		3ABDC3062E41D32300C9E2BD /* requirements.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = requirements.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -75,6 +82,8 @@
 		3ABDC23A2E3F60E500C9E2BD = {
 			isa = PBXGroup;
 			children = (
+				3ABDC3052E41D32300C9E2BD /* main.py */,
+				3ABDC3062E41D32300C9E2BD /* requirements.txt */,
 				3ABDC2452E3F60E500C9E2BD /* OptionCallAgent */,
 				3ABDC2562E3F60E600C9E2BD /* OptionCallAgentTests */,
 				3ABDC2602E3F60E600C9E2BD /* OptionCallAgentUITests */,
@@ -212,6 +221,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3ABDC3072E41D32300C9E2BD /* requirements.txt in Resources */,
+				3ABDC3082E41D32300C9E2BD /* main.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
