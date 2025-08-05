@@ -13,7 +13,8 @@ class OptionAgentViewModel: ObservableObject {
     private let agent = RuleBasedOptionAgent()
     
     init() {
-        fetchOptionCalls()
+//        fetchOptionCalls()
+        fetchLiveOptionCalls()
     }
     
     func fetchOptionCalls() {
@@ -27,6 +28,24 @@ class OptionAgentViewModel: ObservableObject {
         ]
         
         optionCalls = agent.generateCalls(from: mockData)
+    }
+    
+    
+    // Live data from NSE
+    func fetchLiveOptionCalls() {
+        guard let url = URL(string: "https://<your-backend-url>/market-data") else { return }
+
+        URLSession.shared.dataTask(with: url) { data, response, error in
+            guard let data = data,
+                  let marketData = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                print("Error fetching data: \(error?.localizedDescription ?? "Unknown")")
+                return
+            }
+
+            DispatchQueue.main.async {
+                self.optionCalls = self.agent.generateCalls(from: marketData)
+            }
+        }.resume()
     }
     
 }

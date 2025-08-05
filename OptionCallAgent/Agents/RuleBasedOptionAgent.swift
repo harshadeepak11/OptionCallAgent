@@ -22,25 +22,25 @@ class RuleBasedOptionAgent {
         var calls: [OptionCall] = []
         if trend == "Bullish" {
             let call = OptionCall(
-                type: "CALL",
+                type: .call,
                 strikePrice: nifty + 100,
-                expiry: "08-Aug-2025",
+                expiry: DateFormatter().date(from: "08-Aug-2025") ?? Date(),
                 reason: "Nifty is trending up. Buy near the money CALL option.")
             calls.append(call)
         }
         if trend == "Bearish" {
             let put = OptionCall(
-                type: "PUT",
+                type: .put,
                 strikePrice: nifty + 100,
-                expiry: "08-Aug-2025",
+                expiry: DateFormatter().date(from: "08-Aug-2025") ?? Date(),
                 reason: "Nifty is trending down. Buy near the money PUT option.")
             calls.append(put)
         }
         if iv > 15 {
                 calls.append(OptionCall(
-                    type: "SELL",
+                    type: .sell,
                     strikePrice: nifty,
-                    expiry: "08-Aug-2025",
+                    expiry: DateFormatter().date(from: "08-Aug-2025") ?? Date(),
                     reason: "High implied volatility. Consider selling options (advanced strategy)."
                 ))
             }

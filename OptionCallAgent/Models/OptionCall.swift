@@ -7,10 +7,16 @@
 
 import Foundation
 
-struct OptionCall: Identifiable {
+enum OptionType: String {
+    case call = "CALL"
+    case put = "PUT"
+    case sell = "SELL"
+}
+
+struct OptionCall: Identifiable, Decodable {
     let id = UUID()
-    let type: String // Call or put
+    let type: String
     let strikePrice: Double
-    let expiry: String
+    let expiry: Date
     let reason: String
 }
