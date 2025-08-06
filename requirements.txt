@@ -1,3 +1,7 @@
 fastapi
 uvicorn[standard]
+httpx
+langchain
+langchain-community
 requests
+apscheduler

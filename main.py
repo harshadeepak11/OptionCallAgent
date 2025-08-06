@@ -1,55 +1,61 @@
-#
-#  main.py
-#  OptionCallAgent
-#
-#  Created by Harsha on 03/08/25.
-#
+# main.py
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
-from pydantic import BaseModel
 from typing import List
+from pydantic import BaseModel
+from agent_scheduler_backend import start_scheduler, get_latest_calls
+from agent import run_agent_on_nse_data
+from nse import fetch_nse_data
 
 app = FastAPI()
 
-# Enable CORS for frontend communication
+# CORS (adjust in production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this to your frontend domain in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Define response model
-class OptionCall(BaseModel):
-    type: str  # CALL, PUT, SELL
+# Response model for generated calls
+class OptionCallResponse(BaseModel):
+    type: str
     strikePrice: float
-    expiry: datetime
+    targetPrice: float
+    stopLoss: float
+    expiry: str
+    accuracy: float
     reason: str
-    
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.strftime('%Y-%m-%dT%H:%M:%SZ')
-        }
+    index: str
 
-@app.get("/")
-def read_root():
-    return {"message": "Server is running!"}
+@app.on_event("startup")
+def on_startup():
+    start_scheduler()
 
-@app.get("/option-calls", response_model=List[OptionCall])
-def get_option_calls():
-    raw_calls = generate_option_calls()
-    parsed_calls = []
+@app.get("/latest-calls", response_model=List[OptionCallResponse])
+def latest_calls_endpoint():
+    return get_latest_calls()
 
-    for call in raw_calls:
-        # You might need to improve this parsing logic
-        parsed_calls.append(OptionCall(
-            type="CALL",  # extract from call["recommendation"]
-            strikePrice=25000.0,  # extract or parse
-            expiry=datetime(2025, 8, 8),  # parse from string
-            reason=call["recommendation"]
-        ))
+@app.get("/generate-calls", response_model=List[OptionCallResponse])
+async def generate_calls_now(index: str = "NIFTY"):
+    """
+    Manual trigger: generate calls for a given index immediately.
+    """
+    try:
+        nse_data = await fetch_nse_data(index)
+        calls = await run_agent_on_nse_data(nse_data, index_name=index)
+        high_conf = [c for c in calls if c.get("accuracy", 0) >= 95.0]
+        return high_conf[:5]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    return parsed_calls
+@app.get("/test-nse")
+async def test_nse(symbol: str = "NIFTY"):
+    try:
+        data = await fetch_nse_data(symbol)
+        # return a small slice for sanity
+        return {"message": f"Fetched {symbol}", "underlyingValue": data.get("records", {}).get("underlyingValue")}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
