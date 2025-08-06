@@ -1,6 +1,7 @@
 # nse.py
 
 import asyncio
+import random
 import httpx
 from typing import Dict
 
@@ -22,35 +23,41 @@ DEFAULT_HEADERS = {
 }
 
 
-async def fetch_nse_data(symbol: str = "NIFTY") -> Dict:
+async def fetch_nse_data(symbol: str = "NIFTY", max_retries: int = 3) -> Dict:
     """
-    Fetch NSE Option Chain data (NIFTY, BANKNIFTY, etc.) with headers & cookies.
-    Retries a couple of times to bypass occasional 401 due to bot-protection timing.
+    Fetch NSE Option Chain data for the given index, with retries, backoff, and proper cookie/session priming.
     """
     url = OPTION_CHAIN_URL + symbol.upper()
 
-    for attempt in range(3):
+    for attempt in range(1, max_retries + 1):
         try:
-            async with httpx.AsyncClient(
-                headers=DEFAULT_HEADERS, timeout=10.0, follow_redirects=True
-            ) as client:
-                # Preliminary hit to get cookies
+            async with httpx.AsyncClient(headers=DEFAULT_HEADERS, timeout=10.0, follow_redirects=True) as client:
+                # Step 1: Hit homepage to obtain session cookies
                 homepage_resp = await client.get(NSE_BASE_URL)
                 if homepage_resp.status_code != 200:
-                    raise Exception(f"Failed to fetch homepage: {homepage_resp.status_code}")
+                    raise Exception(f"Homepage fetch failed: {homepage_resp.status_code}")
 
-                # Actual option-chain request
+                # Small pause to let NSE set cookies server-side
+                await asyncio.sleep(0.5)
+
+                # Step 2: Actual option chain request using the same client (cookies preserved)
                 resp = await client.get(url)
+
                 if resp.status_code == 200:
                     return resp.json()
                 elif resp.status_code == 401:
-                    # small backoff and retry
-                    await asyncio.sleep(1 + attempt)
-                    continue
+                    # Likely bot detection; backoff and retry
+                    print(f"[fetch_nse_data] Attempt {attempt}: 401 Unauthorized, retrying...")
                 else:
+                    # Unexpected status
                     raise Exception(f"NSE API error {resp.status_code}: {resp.text[:300]}")
         except Exception as e:
-            if attempt == 2:
+            print(f"[fetch_nse_data] Attempt {attempt} failed for {symbol}: {e}")
+            if attempt == max_retries:
+                # Last attempt, rethrow
                 raise
-            await asyncio.sleep(1)
-    raise Exception("Failed to fetch NSE data after retries")
+        # Exponential backoff with jitter before next try
+        backoff = (2 ** attempt) + random.uniform(0, 1)
+        await asyncio.sleep(backoff)
+
+    raise Exception(f"Failed to fetch NSE data for {symbol} after {max_retries} attempts")
